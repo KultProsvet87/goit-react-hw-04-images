@@ -1,61 +1,47 @@
 import { ImageGalleryItems } from 'components/ImageGalleryItems/ImageGalleryItems';
 import { Modal } from 'components/Modal/Modal';
-import { Component } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
+import { useState } from 'react';
 
 const modal = document.querySelector('#modal-root');
 
-export class ImageGallery extends Component {
-  state = {
-    imgURL: '',
-    tags: '',
+export const ImageGallery = ({ galleryItems }) => {
+  const [imgURL, setImgURL] = useState('');
+  const [tags, setTags] = useState('');
+
+  const onImgClick = (imgURL, tags) => {
+    setImgURL(imgURL);
+    setTags(tags);
   };
 
-  static propTypes = {
-    galleryItems: PropTypes.arrayOf(PropTypes.object),
+  const modalToggle = () => {
+    setImgURL('');
+    setTags('');
   };
 
-  onImgClick = (imgURL, tags) => {
-    this.setState({ imgURL, tags });
-  };
+  return (
+    <>
+      <ul className="ImageGallery">
+        {galleryItems.map(item => (
+          <ImageGalleryItems
+            key={item.id}
+            tags={item.tags}
+            webformatURL={item.webformatURL}
+            largeImageURL={item.largeImageURL}
+            onImgClick={onImgClick}
+          />
+        ))}
+      </ul>
+      {imgURL &&
+        createPortal(
+          <Modal imgURL={imgURL} tags={tags} modalToggle={modalToggle} />,
+          modal
+        )}
+    </>
+  );
+};
 
-  modalToggle = () => {
-    this.setState({
-      imgURL: '',
-      tags: '',
-    });
-  };
-
-  render() {
-    const { galleryItems } = this.props;
-    return (
-      <>
-        <ul className="ImageGallery">
-          {galleryItems.map(item => (
-            <ImageGalleryItems
-              key={item.id}
-              tags={item.tags}
-              webformatURL={item.webformatURL}
-              largeImageURL={item.largeImageURL}
-              onImgClick={this.onImgClick}
-            />
-          ))}
-        </ul>
-        {this.state.imgURL &&
-          createPortal(
-            <Modal
-              imgURL={this.state.imgURL}
-              tags={this.state.tags}
-              modalToggle={this.modalToggle}
-            />,
-            modal
-          )}
-      </>
-    );
-  }
-}
-
-// ImageGallery.propTypes = {
-//   galleryItems: PropTypes.arrayOf(PropTypes.object),
-// };
+ImageGallery.propTypes = {
+  galleryItems: PropTypes.arrayOf(PropTypes.object),
+};

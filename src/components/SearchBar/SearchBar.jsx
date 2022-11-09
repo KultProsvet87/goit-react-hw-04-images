@@ -1,25 +1,18 @@
-import { Component } from 'react';
 import { Notify } from 'notiflix';
 import { ButtonTypes } from 'components/Button/ButtonTypes';
 import { Button } from 'components/Button/Button';
 import PropTypes from 'prop-types';
+import { useState } from 'react';
 
-export class SearchBar extends Component {
-  state = {
-    search: '',
-    prevSearchQuery: '',
+export const SearchBar = ({ handleSubmite, isLoading }) => {
+  const [search, setSearch] = useState('');
+  const [prevSearchQuery, setPrevSearchQuery] = useState('');
+
+  const handleSearchInput = e => {
+    setSearch(e.target.value);
   };
 
-  static propTypes = {
-    handleSubmite: PropTypes.func.isRequired,
-    isLoading: PropTypes.bool.isRequired,
-  };
-
-  handleSearchInput = e => {
-    this.setState({ search: e.target.value });
-  };
-
-  onSubmite = e => {
+  const onSubmit = e => {
     e.preventDefault();
     const searchQuery = e.currentTarget.elements.search.value;
 
@@ -28,37 +21,36 @@ export class SearchBar extends Component {
       return;
     }
 
-    if (this.state.prevSearchQuery === searchQuery) {
+    if (prevSearchQuery === searchQuery) {
       Notify.info('We already found it');
       return;
     }
 
-    this.setState({ prevSearchQuery: searchQuery });
+    setPrevSearchQuery(searchQuery);
 
-    this.props.handleSubmite(searchQuery);
+    handleSubmite(searchQuery);
   };
 
-  render() {
-    return (
-      <header className="Searchbar">
-        <form className="SearchForm" onSubmit={this.onSubmite}>
-          <Button {...ButtonTypes.search} disabled={this.props.isLoading} />
-          <input
-            className="SearchForm-input"
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            name="search"
-            value={this.state.search}
-            onChange={this.handleSearchInput}
-          />
-        </form>
-      </header>
-    );
-  }
-}
-// SearchBar.propTypes = {
-//   handleSubmite: PropTypes.func.isRequired,
-//   isLoading: PropTypes.func.isRequired,
-// };
+  return (
+    <header className="Searchbar">
+      <form className="SearchForm" onSubmit={onSubmit}>
+        <Button {...ButtonTypes.search} disabled={isLoading} />
+        <input
+          className="SearchForm-input"
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          name="search"
+          value={search}
+          onChange={handleSearchInput}
+        />
+      </form>
+    </header>
+  );
+};
+
+SearchBar.propTypes = {
+  handleSubmite: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+};

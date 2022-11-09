@@ -1,42 +1,31 @@
-import { Component } from 'react';
 import PropTypes from 'prop-types';
+import { useEffect } from 'react';
 
-export class Modal extends Component {
-  static propTypes = {
-    imgURL: PropTypes.string.isRequired,
-    tags: PropTypes.string,
-    modalToggle: PropTypes.func.isRequired,
+export const Modal = ({ imgURL, tags, modalToggle }) => {
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
+
+  const handleKeyDown = e => {
+    if (e.code === 'Escape') modalToggle();
   };
 
-  componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyDown);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
-  }
-
-  handleKeyDown = e => {
-    if (e.code === 'Escape') this.props.modalToggle();
+  const onClose = e => {
+    if (e.currentTarget === e.target) modalToggle();
   };
 
-  onClose = e => {
-    if (e.currentTarget === e.target) this.props.modalToggle();
-  };
-
-  render() {
-    return (
-      <div className="Overlay" onClick={this.onClose}>
-        <div className="Modal">
-          <img src={this.props.imgURL} alt={this.props.tags} />
-        </div>
+  return (
+    <div className="Overlay" onClick={onClose}>
+      <div className="Modal">
+        <img src={imgURL} alt={tags} />
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
-// Modal.propTypes = {
-//   imgURL: PropTypes.string.isRequired,
-//   tags: PropTypes.string,
-//   modalToggle: PropTypes.func.isRequired,
-// };
+Modal.propTypes = {
+  imgURL: PropTypes.string.isRequired,
+  tags: PropTypes.string,
+  modalToggle: PropTypes.func.isRequired,
+};

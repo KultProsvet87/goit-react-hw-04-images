@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { Notify } from 'notiflix';
 
 import { SearchBar } from './SearchBar/SearchBar';
@@ -8,24 +8,25 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { ButtonTypes } from './Button/ButtonTypes';
 
-export class App extends Component {
-  state = {
-    galleryItems: [],
-    isLoading: false,
-    maxPages: 1,
-    page: 1,
-    query: '',
-    isSubmite: false,
-  };
+export const App = () => {
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [maxPages, setMaxPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState('');
+  const [isSubmite, setIsSubmite] = useState(false);
 
-  async componentDidUpdate(pProps, pState) {
-    if (pState.page !== this.state.page || pState.query !== this.state.query) {
-      searchParams.q = this.state.query;
-      searchParams.page = this.state.page;
+  useEffect(() => {
+    if (!query) return;
+    searchParams.q = query;
+    searchParams.page = page;
 
-      this.toggleLoading();
+    getData();
+
+    async function getData() {
+      toggleLoading();
       const res = await getGallerydData(searchParams);
-      this.toggleLoading();
+      toggleLoading();
 
       if (!res) return;
 
@@ -38,54 +39,40 @@ export class App extends Component {
 
       const maxPages = Math.ceil(res.totalHits / searchParams.per_page);
 
-      this.setState(prev => ({
-        maxPages,
-        galleryItems: [...prev.galleryItems, ...res.hits],
-      }));
+      setMaxPages(maxPages);
+      setGalleryItems(prev => [...prev, ...res.hits]);
 
-      if (this.state.isSubmite) {
+      if (isSubmite) {
         Notify.success(`Hooray! We found ${res.totalHits} images.`);
       }
     }
-  }
+  }, [query, page]);
 
-  toggleLoading = () => {
-    this.setState(prev => {
-      return { isLoading: !prev.isLoading };
-    });
+  const toggleLoading = () => {
+    setIsLoading(prev => !prev);
   };
 
-  handleSubmite = query => {
-    this.setState({
-      galleryItems: [],
-      maxPages: 1,
-      page: 1,
-      isSubmite: true,
-      query,
-    });
+  const handleSubmit = query => {
+    setGalleryItems([]);
+    setMaxPages(1);
+    setPage(1);
+    setIsSubmite(true);
+    setQuery(query);
   };
 
-  handleLoadMore = () => {
-    this.setState(prev => {
-      return { page: prev.page + 1, isSubmite: false };
-    });
+  const handleLoadMore = () => {
+    setPage(prev => prev + 1);
+    setIsSubmite(false);
   };
 
-  render() {
-    return (
-      <>
-        <SearchBar
-          handleSubmite={this.handleSubmite}
-          isLoading={this.state.isLoading}
-        />
-        {this.state.galleryItems.length > 0 && (
-          <ImageGallery galleryItems={this.state.galleryItems} />
-        )}
-        {this.state.isLoading && <Loading />}
-        {this.state.maxPages > 1 && searchParams.page < this.state.maxPages && (
-          <Button onClick={this.handleLoadMore} {...ButtonTypes.loadMore} />
-        )}
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <SearchBar handleSubmite={handleSubmit} isLoading={isLoading} />
+      {galleryItems.length > 0 && <ImageGallery galleryItems={galleryItems} />}
+      {isLoading && <Loading />}
+      {maxPages > 1 && page < maxPages && (
+        <Button onClick={handleLoadMore} {...ButtonTypes.loadMore} />
+      )}
+    </>
+  );
+};
