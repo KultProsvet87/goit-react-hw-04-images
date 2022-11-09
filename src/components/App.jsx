@@ -46,7 +46,7 @@ export const App = () => {
         Notify.success(`Hooray! We found ${res.totalHits} images.`);
       }
     }
-  }, [query, page]);
+  }, [query, page, isSubmite]);
 
   const toggleLoading = () => {
     setIsLoading(prev => !prev);
